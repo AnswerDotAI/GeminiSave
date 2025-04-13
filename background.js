@@ -85,7 +85,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             // Extract conversation ID from sender tab URL
             let conversationId = null;
             if (sender.tab && sender.tab.url) {
-                const match = sender.tab.url.match(/aistudio\.google\.com\/app\/prompts\/([a-zA-Z0-9_-]+)/);
+                const match = sender.tab.url.match(/aistudio\.google\.com(?:\/u\/\d+)?\/(?:app\/)?prompts\/([a-zA-Z0-9_-]+)/);
                 conversationId = match ? match[1] : null;
                 console.log('GeminiSave: Extracted ID from sender URL for save/copy:', conversationId);
             } else {
