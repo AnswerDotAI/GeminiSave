@@ -1,6 +1,6 @@
 function createButton(icon, text, action) {
     let button = document.createElement('button');
-    button.className = 'gemini-save-button mat-mdc-icon-button mat-mdc-button-base';
+    button.className = 'gemini-save-button mat-mdc-icon-button mat-mdc-button-base mat-unthemed gmat-mdc-button';
     button.setAttribute('mattooltip', text);
     button.setAttribute('aria-label', text);
     
@@ -9,6 +9,18 @@ function createButton(icon, text, action) {
     iconElement.textContent = icon === 'github' ? 'share' : 'content_copy';
     
     button.appendChild(iconElement);
+    
+    let rippleSpan = document.createElement('span');
+    rippleSpan.className = 'mat-mdc-button-persistent-ripple mdc-icon-button__ripple';
+    button.appendChild(rippleSpan);
+
+    let focusSpan = document.createElement('span');
+    focusSpan.className = 'mat-focus-indicator';
+    button.appendChild(focusSpan);
+
+    let touchSpan = document.createElement('span');
+    touchSpan.className = 'mat-mdc-button-touch-target';
+    button.appendChild(touchSpan);
     
     button.addEventListener('click', function() {
         const scrapedData = scrapeConversationFromDOM();
@@ -67,32 +79,59 @@ function checkAndAddShareButtons() {
     }
 }
 
+/**
+ * Scrapes conversation data from the AI Studio DOM
+ * WARNING: These selectors target AI Studio's current DOM structure (as of April 2025)
+ * and may break if Google updates the UI. Verification needed after updates.
+ */
 function scrapeConversationFromDOM() {
     const conversation = [];
     const turns = document.querySelectorAll('ms-chat-turn');
+    
+    console.log('GeminiSave: Found', turns.length, 'conversation turns');
 
     turns.forEach(turn => {
         const roleElement = turn.querySelector('[data-turn-role]');
-        if (!roleElement) return;
+        if (!roleElement) {
+            console.warn('GeminiSave: Could not determine role for a turn:', turn);
+            return;
+        }
 
-        const role = roleElement.getAttribute('data-turn-role').toLowerCase(); // 'user' or 'model'
+        const role = roleElement.getAttribute('data-turn-role')?.toLowerCase(); // 'user' or 'model'
+        if (!role) {
+            console.warn('GeminiSave: Missing role attribute for turn:', turn);
+            return;
+        }
+        
         let content = '';
-
         const contentElement = turn.querySelector('ms-cmark-node') || turn.querySelector('.text-chunk');
+        
         if (contentElement) {
             content = contentElement.innerText || contentElement.textContent;
         }
 
-        if (role && content.trim()) {
-            conversation.push({
-                role: role.toLowerCase(),
-                content: content.trim()
-            });
+        if (!content.trim()) {
+            console.warn('GeminiSave: Found turn with empty content:', turn);
+            return; // Skip turns with empty content
         }
+
+        const timestampElement = turn.querySelector('.timestamp') || turn.querySelector('[title*="at"]');
+        const timestamp = timestampElement ? 
+            (timestampElement.getAttribute('title') || timestampElement.innerText) : null;
+
+        conversation.push({
+            role: role.toLowerCase(),
+            content: content.trim(),
+            timestamp: timestamp // Add timestamp if found
+        });
     });
 
     const titleElement = document.querySelector('ms-toolbar h1');
     const title = titleElement ? titleElement.innerText.trim() : 'Gemini Conversation';
+    
+    if (conversation.length === 0) {
+        console.warn('GeminiSave: No conversation content found. DOM structure may have changed.');
+    }
 
     return { title, conversation };
 }

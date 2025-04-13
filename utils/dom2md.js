@@ -11,7 +11,10 @@ function escapeHtml(str) {
 }
 
 // Function to format date
-function formatDate() {
+function formatDate(timestamp) {
+    if (timestamp) {
+        return timestamp; // Use the timestamp from the DOM if available
+    }
     return new Date().toLocaleString("en-US", {
       month: "short",
       day: "numeric",
@@ -21,6 +24,12 @@ function formatDate() {
     });
 }
 
+/**
+ * Converts scraped conversation data to Markdown format
+ * @param {string} title - The conversation title
+ * @param {Array} conversation - Array of conversation turns with role, content, and optional timestamp
+ * @returns {string} Formatted markdown string
+ */
 function convertScrapedDataToMarkdown(title, conversation) {
     const bits = [];
     bits.push(`# ${title || 'Gemini Conversation'}`);
@@ -29,7 +38,8 @@ function convertScrapedDataToMarkdown(title, conversation) {
     conversation.forEach(turn => {
         const role = turn.role === 'user' ? 'User' : 'Model';
         const emoji = turn.role === 'user' ? '🧑' : '✨'; // Use sparkle emoji for Gemini
-        bits.push(`## ${emoji} ${role} _(${formatDate()})_`);
+        const timestampStr = turn.timestamp ? `_(${turn.timestamp})_` : '';
+        bits.push(`## ${emoji} ${role} ${timestampStr}`);
         bits.push('');
         
         if (turn.content) {
