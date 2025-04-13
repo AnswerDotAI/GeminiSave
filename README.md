@@ -49,4 +49,6 @@ The extension adds two buttons to the Gemini interface in the top-right corner o
 - **Share to Gist** (share icon): Saves your conversation to a GitHub Gist
 - **Copy to Clipboard** (clipboard icon): Copies the conversation in Markdown format to your clipboard
 
+**See [this video](https://www.loom.com/share/f58e90829a604394b807d07204524d03?sid=537515fe-0404-45a7-9c35-d77ec883db6e)** for a demo.
+
 If you have saved your PAT correctly, a new tab will open with a gist containing your conversation. You can inspect the logs by clicking on the extension icon and scrolling down to logs to check if there are any issues with your PAT.
