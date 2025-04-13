@@ -8,7 +8,7 @@
 
 1. **Clone or download this repository**
    ```
-   git clone https://github.com/yourusername/GeminiSave.git
+   git clone https://github.com/AnswerDotAI/GeminiSave.git
    ```
    Or download and extract the ZIP file from the repository.
 
