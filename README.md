@@ -2,20 +2,42 @@
 
 > A Chrome extension that saves conversations with Google Gemini to GitHub Gists or your clipboard.
 
+## Installation
+
+### Local Installation (Developer Mode)
+
+1. **Clone or download this repository**
+   ```
+   git clone https://github.com/yourusername/GeminiSave.git
+   ```
+   Or download and extract the ZIP file from the repository.
+
+2. **Open Chrome Extensions page**
+   - Type `chrome://extensions` in your Chrome address bar
+   - Or go to Chrome menu (three dots) → More Tools → Extensions
+
+3. **Enable Developer Mode**
+   - Toggle on the "Developer mode" switch in the top-right corner
+
+4. **Load the extension**
+   - Click the "Load unpacked" button that appears
+   - Navigate to the directory where you cloned/extracted GeminiSave
+   - Select the root folder (the one containing `manifest.json`)
+
+5. **Verify installation**
+   - The GeminiSave extension should appear in your extensions list
+   - The extension icon should appear in your Chrome toolbar (pin it if necessary)
+
 ## Usage
 
 ### Step 1: Obtain a PAT
 
 Obtain a [personal access token (PAT)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic) with the `gist` scope. (Use the 'Tokens (classic)' option in the interface).
 
-### Step 2: Install the extension
-
-Follow [these steps](https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world#load-unpacked) to load an unpacked extension. Select the root of this repository as the extension directory.
-
-### Step 3: Save your PAT
+### Step 2: Save your PAT
 After installing the extension, you can click the extension icon to save your PAT.
 
-### Step 4: Save your conversation
+### Step 3: Save your conversation
 
 When you are ready to save your conversation, click on the share button with the github icon.
 
