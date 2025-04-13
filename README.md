@@ -1,3 +1,5 @@
+🚧 Under Construction (Not Ready) 🚧
+
 # GeminiSave
 
 > A Chrome extension that saves conversations with Google Gemini to GitHub Gists or your clipboard.
