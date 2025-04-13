@@ -45,9 +45,9 @@ When you are ready to save your conversation, click on the share button with the
 
 > **NOTE:** You must refresh the page after loading or receiving new responses before using the buttons. This ensures the extension captures all conversation data properly.
 
-The extension adds two buttons to the Gemini interface in the top-right corner of the page:
-- **Share to Gist** (share icon): Saves your conversation to a GitHub Gist
-- **Copy to Clipboard** (clipboard icon): Copies the conversation in Markdown format to your clipboard
+The extension adds two buttons to the Gemini interface in the navbar that are very subtle:
+- **Share** (share icon): Saves your conversation to a GitHub Gist, this looks like the share icon elsewhere in the app.
+- **Copy** (clipboard icon): Copies the conversation in Markdown format to your clipboard, this looks like the copy button elsewhere in the app.
 
 **See [this video](https://www.loom.com/share/f58e90829a604394b807d07204524d03?sid=537515fe-0404-45a7-9c35-d77ec883db6e)** for a demo.
 
