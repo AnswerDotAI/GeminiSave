@@ -1,0 +1,46 @@
+/* Button styles */
+.gemini-save-button {
+  margin-left: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  background-color: transparent;
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.gemini-save-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.gemini-save-button .material-symbols-outlined {
+  font-size: 20px;
+  color: #5f6368;
+}
+
+/* Banner styles */
+@keyframes slideDown {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(0); }
+  to { transform: translateY(-100%); }
+}
+
+article.error {
+  background-color: #d30c00;
+  border-color: #d30c00;
+  color: white;
+}
+
+article.success {
+  background-color: #125019;
+  border-color: #125019;
+  color: white;
+}
