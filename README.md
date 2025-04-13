@@ -1,6 +1,8 @@
 # GeminiSave
 
-> A Chrome extension that saves conversations with Google Gemini to GitHub Gists or your clipboard.
+> A Chrome extension that saves conversations with Google AI Studio to GitHub Gists or your clipboard.
+
+Note this is meant to work with [https://aistudio.google.com/](https://aistudio.google.com/)
 
 ## Installation
 
