@@ -160,7 +160,10 @@ function addShareButtons() {
 }
 
 function checkAndAddShareButtons() {
-    if (window.location.href.startsWith('https://aistudio.google.com/app/')) {
+    const url = window.location.href;
+    if (url.startsWith('https://aistudio.google.com/app/') || 
+        url.startsWith('https://aistudio.google.com/prompts/') ||
+        (url.includes('aistudio.google.com/u/') && url.includes('/prompts/'))) {
         const maxAttempts = 15;
         let attempts = 0;
 

@@ -85,7 +85,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             // Extract conversation ID from sender tab URL
             let conversationId = null;
             if (sender.tab && sender.tab.url) {
-                const match = sender.tab.url.match(/aistudio\.google\.com\/app\/prompts\/([a-zA-Z0-9_-]+)/);
+                const match = sender.tab.url.match(/aistudio\.google\.com.*?\/prompts\/([a-zA-Z0-9_-]+)/);
                 conversationId = match ? match[1] : null;
                 console.log('GeminiSave: Extracted ID from sender URL for save/copy:', conversationId);
             } else {
@@ -334,7 +334,10 @@ function handleCapturedGetPrompt(message, sender, sendResponse) {
 // Send message to content script to add buttons when a tab is updated
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     // Check if the page is fully loaded and the URL matches
-    if (changeInfo.status === 'complete' && tab.url && tab.url.startsWith('https://aistudio.google.com/app/')) {
+    if (changeInfo.status === 'complete' && tab.url && 
+        (tab.url.startsWith('https://aistudio.google.com/app/') ||
+         tab.url.startsWith('https://aistudio.google.com/prompts/') ||
+         tab.url.includes('aistudio.google.com/u/') && tab.url.includes('/prompts/'))) {
         console.log('GeminiSave: Detected Gemini page load/update, telling content script to check buttons.');
         // Tell the content script to add buttons
         chrome.tabs.sendMessage(tabId, {action: "checkAndAddShareButton"}, response => {
