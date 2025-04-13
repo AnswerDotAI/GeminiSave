@@ -23,39 +23,139 @@ function createButton(icon, text, action) {
     button.appendChild(touchSpan);
     
     button.addEventListener('click', function() {
-        const scrapedData = scrapeConversationFromDOM();
-        chrome.runtime.sendMessage({
-            action: action === 'github' ? 'scrapeAndSaveToGist' : 'scrapeAndCopyToClipboard', 
-            payload: scrapedData
-        }, function(response) {
-            if (response && response.status === 'error') {
-                createBanner(`Error: ${response.log_message}`);
-            } else if (response && response.status === 'success' && action !== 'github') {
-                navigator.clipboard.writeText(response.markdown);
-                createBanner('Copied to clipboard!', 'success', 1000);
-            }
-        });
+        // Don't extract ID here, let background script handle it from sender tab
+        console.log('GeminiSave: Button clicked.');
+        
+        const messageAction = action === 'github' ? 'saveGeminiGist' : 'copyGeminiMarkdown';
+        console.log(`GeminiSave: Sending message to background: Action=${messageAction}`);
+        
+        // Show loading banner immediately
+        if (action === 'github') {
+            createBanner('Creating Gist...', 'info', 0);  // 0 duration = stay until replaced
+        }
+        
+        // Send only the action, background will get ID from sender.tab.url
+        try {
+            chrome.runtime.sendMessage({
+                action: messageAction
+            }, function(response) {
+                // Clear any timeout we might have had
+                console.log('GeminiSave: Received response from background for button click:', response);
+                
+                if (chrome.runtime.lastError) {
+                    console.error('GeminiSave: Runtime error:', chrome.runtime.lastError.message);
+                    createBanner(`Error: ${chrome.runtime.lastError.message}`, 'error', 3000);
+                    return;
+                }
+                
+                if (response && response.status === 'error') {
+                    console.error('GeminiSave: Background script reported error:', response.log_message);
+                    createBanner(`Error: ${response.log_message}`, 'error', 3000);
+                } else if (response && response.status === 'success') {
+                    if (action === 'github') {
+                        createBanner('Gist created successfully!', 'success', 3000);
+                    } else {
+                        navigator.clipboard.writeText(response.markdown);
+                        createBanner('Copied to clipboard!', 'success', 1000);
+                    }
+                } else {
+                    createBanner('Unknown response from background script', 'error', 3000);
+                }
+            });
+        } catch (err) {
+            console.error('GeminiSave: Error sending message:', err);
+            createBanner(`Error: ${err.message}`, 'error', 3000);
+        }
     });
     
     return button;
+}
+
+// Create a simple banner notification
+function createBanner(message, type = 'info', duration = 3000) {
+    // Remove any existing banner
+    const existingBanner = document.querySelector('.gemini-save-banner');
+    if (existingBanner) {
+        existingBanner.remove();
+    }
+    
+    const banner = document.createElement('div');
+    banner.className = `gemini-save-banner gemini-save-banner-${type}`;
+    banner.textContent = message;
+    
+    // Apply styles
+    banner.style.position = 'fixed';
+    banner.style.top = '10px';
+    banner.style.left = '50%';
+    banner.style.transform = 'translateX(-50%)';
+    banner.style.padding = '10px 20px';
+    banner.style.borderRadius = '4px';
+    banner.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+    banner.style.zIndex = '10000';
+    banner.style.fontSize = '14px';
+    
+    // Set color based on type
+    if (type === 'error') {
+        banner.style.backgroundColor = '#f44336';
+        banner.style.color = 'white';
+    } else if (type === 'success') {
+        banner.style.backgroundColor = '#4caf50';
+        banner.style.color = 'white';
+    } else {
+        banner.style.backgroundColor = '#2196f3';
+        banner.style.color = 'white';
+    }
+    
+    document.body.appendChild(banner);
+    
+    // Automatically remove after duration (if not 0)
+    if (duration > 0) {
+        setTimeout(() => {
+            if (banner.parentNode) {
+                banner.remove();
+            }
+        }, duration);
+    }
+    
+    return banner;
+}
+
+/**
+ * Add Material Icons stylesheet to the document
+ */
+function addMaterialIcons() {
+    if (document.querySelector('link[href*="material-symbols"]')) {
+        return; // Already added
+    }
+    
+    if (!document.head) {
+        // If document.head is not available, try again later
+        console.log('GeminiSave: document.head not available, will retry later');
+        setTimeout(addMaterialIcons, 100);
+        return;
+    }
+    
+    let materialLink = document.createElement('link');
+    materialLink.rel = 'stylesheet';
+    materialLink.href = 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined';
+    document.head.appendChild(materialLink);
+    console.log('GeminiSave: Added Material Icons stylesheet');
 }
 
 function addShareButtons() {
     let buttonContainer = document.querySelector('ms-header-root .header-container .right-side');
     
     if (buttonContainer && !buttonContainer.querySelector('.gemini-save-button')) {
-        if (!document.querySelector('link[href*="material-symbols"]')) {
-            let materialLink = document.createElement('link');
-            materialLink.rel = 'stylesheet';
-            materialLink.href = 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined';
-            document.head.appendChild(materialLink);
-        }
+        // Add material icons stylesheet safely
+        addMaterialIcons();
 
         let shareButton = createButton('github', 'Share to Gist', 'github');
         let clipboardButton = createButton('clipboard', 'Copy to Clipboard', 'clipboard');
 
         buttonContainer.prepend(clipboardButton);
         buttonContainer.prepend(shareButton);
+        
+        console.log('GeminiSave: Added share buttons to the UI');
     }
 }
 
@@ -72,79 +172,23 @@ function checkAndAddShareButtons() {
                     setTimeout(tryAddButtons, 1000);
                 }
             } else {
-                console.log("Failed to add share buttons after maximum attempts");
+                console.log("GeminiSave: Failed to add share buttons after maximum attempts");
             }
         }
         tryAddButtons();
     }
 }
 
-/**
- * Scrapes conversation data from the AI Studio DOM
- * WARNING: These selectors target AI Studio's current DOM structure (as of April 2025)
- * and may break if Google updates the UI. Verification needed after updates.
- */
-function scrapeConversationFromDOM() {
-    const conversation = [];
-    const turns = document.querySelectorAll('ms-chat-turn');
-    
-    console.log('GeminiSave: Found', turns.length, 'conversation turns');
-
-    turns.forEach(turn => {
-        const roleElement = turn.querySelector('[data-turn-role]');
-        if (!roleElement) {
-            console.warn('GeminiSave: Could not determine role for a turn:', turn);
-            return;
-        }
-
-        const role = roleElement.getAttribute('data-turn-role')?.toLowerCase(); // 'user' or 'model'
-        if (!role) {
-            console.warn('GeminiSave: Missing role attribute for turn:', turn);
-            return;
-        }
-        
-        let content = '';
-        const contentElement = turn.querySelector('ms-cmark-node') || turn.querySelector('.text-chunk');
-        
-        if (contentElement) {
-            content = contentElement.innerText || contentElement.textContent;
-        }
-
-        if (!content.trim()) {
-            console.warn('GeminiSave: Found turn with empty content:', turn);
-            return; // Skip turns with empty content
-        }
-
-        const timestampElement = turn.querySelector('.timestamp') || turn.querySelector('[title*="at"]');
-        const timestamp = timestampElement ? 
-            (timestampElement.getAttribute('title') || timestampElement.innerText) : null;
-
-        conversation.push({
-            role: role.toLowerCase(),
-            content: content.trim(),
-            timestamp: timestamp // Add timestamp if found
-        });
-    });
-
-    const titleElement = document.querySelector('ms-toolbar h1');
-    const title = titleElement ? titleElement.innerText.trim() : 'Gemini Conversation';
-    
-    if (conversation.length === 0) {
-        console.warn('GeminiSave: No conversation content found. DOM structure may have changed.');
-    }
-
-    return { title, conversation };
+// Initialize the buttons - wait for document to be fully loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', checkAndAddShareButtons);
+} else {
+    checkAndAddShareButtons();
 }
 
-checkAndAddShareButtons();
-
+// Listen for messages from the background script
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.action === "checkAndAddShareButton") {
         checkAndAddShareButtons();
     }
 });
-
-function extractChatId(url) {
-    const match = url.match(/aistudio\.google\.com\/app\/prompts\/([a-zA-Z0-9_-]+)/);
-    return match ? match[1] : null;
-}

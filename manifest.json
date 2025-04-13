@@ -3,7 +3,7 @@
     "name": "GeminiSave",
     "version": "1.0",
     "description": "A Chrome extension that saves conversations with Gemini to gists.",
-    "permissions": ["storage", "tabs", "clipboardWrite"],
+    "permissions": ["storage", "tabs", "webRequest", "scripting", "clipboardWrite"],
     "host_permissions": ["https://aistudio.google.com/*", "https://generativelanguage.googleapis.com/*"],
     "background": {
         "service_worker": "background.js",
@@ -14,10 +14,15 @@
         "default_popup": "popup/popup.html"
     },
     "content_scripts": [
-        {   
+        {
+            "matches": ["https://aistudio.google.com/*"],
+            "js": ["event-bridge.js", "utils/banner.js"],
+            "run_at": "document_start"
+        },
+        {
             "run_at": "document_end",
             "matches": ["https://aistudio.google.com/*"],
-            "js": ["utils/banner.js", "content.js"]
+            "js": ["content.js"]
         }
     ],
     "web_accessible_resources": [

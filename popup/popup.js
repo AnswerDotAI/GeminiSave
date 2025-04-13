@@ -1,11 +1,17 @@
 document.addEventListener('DOMContentLoaded', function() {
     const saveButton = document.getElementById('save');
     const statusDiv = document.getElementById('status');
-    pat.value = chrome.storage.sync.get('pat') ?? '';
+    const patInput = document.getElementById('pat');
+    
+    // Load the existing PAT properly using a callback
+    chrome.storage.sync.get(['pat'], function(result) {
+        if (result.pat) {
+            patInput.value = result.pat;
+        }
+    });
 
     saveButton.addEventListener('click', function() {
-        const pat = document.getElementById('pat');
-        chrome.storage.sync.set({'pat': `${pat.value}`});
+        chrome.storage.sync.set({'pat': patInput.value});
         createBanner('PAT saved', 'success');
     });
 
